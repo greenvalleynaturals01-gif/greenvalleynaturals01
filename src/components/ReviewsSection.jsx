@@ -6,67 +6,67 @@ import { Quote } from 'lucide-react';
 const reviews = [
   {
     id: 1,
-    name: 'Priya Sharma',
-    location: 'Mumbai, Maharashtra',
+    name: 'Priya P.',
+    location: 'Mumbai',
     rating: 5,
-    review: 'The whole wheat atta makes incredibly soft rotis that stay fresh for hours. The texture and taste are clearly superior to regular store brands.',
-    date: 'January 2026',
+    review: 'Rotis are seriously soft. Been using for 2 weeks now and already ordering more.',
+    date: '2 weeks ago',
   },
   {
     id: 2,
-    name: 'Rajesh Kumar',
-    location: 'Bangalore, Karnataka',
-    rating: 5,
-    review: "I switched to their multigrain atta and my family didn't even notice the change — but we definitely feel lighter and healthier.",
-    date: 'December 2025',
+    name: 'Rajesh K.',
+    location: 'Bangalore',
+    rating: 4,
+    review: 'Really good quality but took longer to arrive. Still happy with the product though.',
+    date: '1 month ago',
   },
   {
     id: 3,
-    name: 'Anjali Patel',
-    location: 'Ahmedabad, Gujarat',
+    name: 'Anjali',
+    location: 'Ahmedabad',
     rating: 5,
-    review: 'Their besan is pure and aromatic. The pakoras and chillas taste amazing — no bitterness at all.',
-    date: 'January 2026',
+    review: "Finally found a besan that doesn't taste bitter. Making the best pakoras ever 😄",
+    date: '2 weeks ago',
   },
   {
     id: 4,
-    name: 'Suresh Reddy',
-    location: 'Hyderabad, Telangana',
-    rating: 5,
-    review: 'The ragi and jowar flours are very fresh and finely milled. Perfect for my gluten-free diet.',
-    date: 'December 2025',
+    name: 'Suresh',
+    location: 'Hyderabad',
+    rating: 4,
+    review: 'Good flour and packaging. Would prefer if price was a bit lower, but solid quality.',
+    date: '3 weeks ago',
   },
   {
     id: 5,
-    name: 'Meera Iyer',
-    location: 'Chennai, Tamil Nadu',
+    name: 'Meera',
+    location: 'Chennai',
     rating: 5,
-    review: 'You can actually feel the difference in quality. The flour smells fresh and the dough feels smoother.',
-    date: 'January 2026',
+    review: 'My kids actually like the multigrain rotis now. No complaints from them lol',
+    date: '1 month ago',
   },
   {
     id: 6,
-    name: 'Vikram Singh',
-    location: 'Delhi NCR',
+    name: 'Vikram S.',
+    location: 'Delhi',
     rating: 5,
-    review: 'As someone focused on fitness, I love their high-protein flour options. Great taste without compromising nutrition.',
-    date: 'January 2026',
+    review: 'Consistent quality every time. Never disappointed.',
+    date: '1 month ago',
   },
   {
     id: 7,
-    name: 'Kavita Desai',
-    location: 'Pune, Maharashtra',
+    name: 'Kavita',
+    location: 'Pune',
     rating: 5,
-    review: 'The multigrain atta has become a daily staple in our home. Rotis stay soft and digestion feels much better.',
-    date: 'January 2026',
+    review: 'The ragi flour is amazing. So fresh and no weird aftertaste.',
+    date: '2 weeks ago',
   },
   {
     id: 8,
-    name: 'Arjun Nair',
-    location: 'Kochi, Kerala',
-    rating: 5,
-    review: 'Very consistent quality every time I order. It feels trustworthy and professionally packaged.',
-    date: 'December 2025',
+    name: 'Arjun',
+    location: 'Kochi',
+    rating: 4,
+    review: 'Good product overall. Packaging could be more eco-friendly though.',
+    date: '3 weeks ago',
   },
 ];
 
@@ -88,28 +88,31 @@ export function ReviewsSection() {
             Customer Love
           </p>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight" style={{ color: '#5B4636' }}>
-            Loved by Thousands<br />
+            Trusted by Growing<br />
             <span style={{ color: '#2F6B3F' }}>Families Across India</span>
           </h2>
           <p className="text-xs sm:text-sm mt-4" style={{ color: '#999' }}>
-            Real reviews from real people who trust us for their daily organic needs
+            Real reviews from customers just like you
           </p>
 
           <div className="flex items-center justify-center gap-2 sm:gap-3 mt-6 sm:mt-8 flex-wrap">
             <div className="flex gap-0.5">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span key={star} className="text-2xl leading-none" style={{ color: '#2F6B3F' }}>★</span>
+              {[...Array(5)].map((_, i) => (
+                <span 
+                  key={i} 
+                  className="text-2xl leading-none" 
+                  style={{ 
+                    color: i < 4 ? '#2F6B3F' : 'transparent',
+                    background: i === 4 ? 'linear-gradient(to right, #2F6B3F 50%, #ffffff 50%)' : 'none',
+                    WebkitBackgroundClip: i === 4 ? 'text' : 'unset',
+                    WebkitTextFillColor: i === 4 ? 'transparent' : 'unset',
+                    backgroundClip: i === 4 ? 'text' : 'unset',
+                    WebkitTextStroke: i === 4 ? '0.8px #2F6B3F' : '0px'
+                  }}
+                >★</span>
               ))}
             </div>
-            <span className="text-lg sm:text-xl lg:text-2xl font-bold" style={{ color: '#3A3A3A' }}>5.0</span>
-            <span className="text-[10px] sm:text-xs" style={{ color: '#999' }}>850+ reviews</span>
-            <div
-              className="flex items-center gap-1.5 text-[10px] sm:text-xs font-medium px-2.5 py-1 rounded-full"
-              style={{ backgroundColor: '#E8F5E9', color: '#2F6B3F' }}
-            >
-              <span>✔</span>
-              <span>Verified Customers</span>
-            </div>
+            <span className="text-[10px] sm:text-xs" style={{ color: '#999' }}>Rated 4.8 by 34 customers</span>
           </div>
         </div>
 
@@ -130,26 +133,12 @@ export function ReviewsSection() {
         </div>
 
         {/* ── DESKTOP: marquee carousel ── */}
-        <div className="hidden sm:block relative">
-          {/*
-           * Edge fades — same exact background colour as section (#FAFAF8),
-           * holding solid for 60% then fading to transparent.
-           * Using rgba() for the transparent stop avoids browser colour interpolation bugs.
-           */}
-          <div
-            className="absolute left-0 top-0 bottom-0 z-10 pointer-events-none"
-            style={{
-              width: '120px',
-              background: 'linear-gradient(to right, #FAFAF8 0%, #FAFAF8 60%, rgba(250,250,248,0) 100%)',
-            }}
-          />
-          <div
-            className="absolute right-0 top-0 bottom-0 z-10 pointer-events-none"
-            style={{
-              width: '120px',
-              background: 'linear-gradient(to left, #FAFAF8 0%, #FAFAF8 60%, rgba(250,250,248,0) 100%)',
-            }}
-          />
+        <div className="hidden sm:block relative overflow-hidden">
+          {/* Left Gradient Fade */}
+          <div className="absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-[#FAFAF8] via-[#FAFAF8]/70 to-transparent z-10 pointer-events-none" />
+
+          {/* Right Gradient Fade */}
+          <div className="absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#FAFAF8] via-[#FAFAF8]/70 to-transparent z-10 pointer-events-none" />
 
           {/* Scrolling track */}
           <div className="flex gap-5 lg:gap-6 marquee-track">
@@ -164,8 +153,11 @@ export function ReviewsSection() {
                 </div>
 
                 <div className="flex gap-0.5 mb-3">
-                  {[...Array(review.rating)].map((_, i) => (
-                    <span key={i} className="text-xl leading-none" style={{ color: '#2F6B3F' }}>★</span>
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-xl leading-none" style={{ 
+                      color: i < review.rating ? '#2F6B3F' : '#ffffff',
+                      WebkitTextStroke: i >= review.rating ? '0.8px #2F6B3F' : '0px'
+                    }}>★</span>
                   ))}
                 </div>
 
@@ -180,9 +172,8 @@ export function ReviewsSection() {
                   >
                     {review.name.charAt(0)}
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="font-semibold text-sm" style={{ color: '#3A3A3A' }}>{review.name}</div>
-                    <div className="text-xs" style={{ color: '#999' }}>{review.location}</div>
                   </div>
                   <div className="ml-auto text-xs shrink-0" style={{ color: '#bbb' }}>{review.date}</div>
                 </div>
@@ -222,8 +213,11 @@ function ReviewCard({ review }) {
       </div>
 
       <div className="flex gap-0.5 mb-2">
-        {[...Array(review.rating)].map((_, i) => (
-          <span key={i} className="text-lg leading-none" style={{ color: '#2F6B3F' }}>★</span>
+        {[...Array(5)].map((_, i) => (
+          <span key={i} className="text-lg leading-none" style={{ 
+            color: i < review.rating ? '#2F6B3F' : '#ffffff',
+            WebkitTextStroke: i >= review.rating ? '0.8px #2F6B3F' : '0px'
+          }}>★</span>
         ))}
       </div>
 
@@ -240,7 +234,6 @@ function ReviewCard({ review }) {
         </div>
         <div className="min-w-0">
           <div className="font-semibold text-sm" style={{ color: '#3A3A3A' }}>{review.name}</div>
-          <div className="text-xs" style={{ color: '#999' }}>{review.location}</div>
         </div>
       </div>
     </div>

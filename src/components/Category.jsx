@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -15,36 +15,116 @@ const categories = [
   { name: 'Multigrain', image: '/images/multigrain.jpeg' },
 ];
 
-const duplicatedCategories = [...categories, ...categories];
+// Duplicate categories 3x for seamless infinite scroll
+const duplicatedCategories = [...categories, ...categories, ...categories];
 
 export function CategoryGrid() {
   const router = useRouter();
-  const trackRef = useRef(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const resumeTimeoutRef = useRef(null);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const cardWidth = isMobile ? 130 : 200;
-  const gap = isMobile ? 8 : 12;
-
-  // ── Arrow buttons: switch to JS scrollLeft on the overflow container ──
-  // We wrap the track in an overflow-x-auto container so scrollBy works.
-  // Animation lives on the inner track div only.
   const scrollContainerRef = useRef(null);
+  const autoSlideIntervalRef = useRef(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const isResettingRef = useRef(false);
 
-  const handleArrow = (direction) => {
+  // Get scroll distance (2 cards)
+  const getScrollDistance = () => {
+    if (!scrollContainerRef.current) return 0;
+    const firstCard = scrollContainerRef.current.querySelector('[data-category-card]');
+    if (!firstCard) return 0;
+    const cardWidth = firstCard.offsetWidth;
+    const gap = parseInt(window.getComputedStyle(scrollContainerRef.current).gap) || 12;
+    return (cardWidth + gap) * 2;
+  };
+
+  // Scroll handler
+  const scroll = (direction) => {
     const container = scrollContainerRef.current;
     if (!container) return;
-    const amount = (cardWidth + gap) * 2;
-    container.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
+
+    const scrollDistance = getScrollDistance();
+    container.scrollBy({
+      left: direction === 'left' ? -scrollDistance : scrollDistance,
+      behavior: 'smooth',
+    });
   };
+
+  // Initialize scroll position to middle
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const scrollDistance = container.scrollWidth / 3;
+    container.scrollLeft = scrollDistance;
+  }, []);
+
+  // Handle infinite scroll reset
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    let resetTimeout = null;
+
+    const handleScroll = () => {
+      if (isResettingRef.current) return;
+
+      const oneSetWidth = container.scrollWidth / 3;
+      const threshold = 50; // Safety margin
+
+      // If scrolled past the start, jump to middle
+      if (container.scrollLeft < threshold) {
+        isResettingRef.current = true;
+        container.scrollLeft = oneSetWidth;
+        resetTimeout = setTimeout(() => {
+          isResettingRef.current = false;
+        }, 100);
+      }
+
+      // If scrolled past the end, jump back to middle
+      if (container.scrollLeft > oneSetWidth * 2 - threshold) {
+        isResettingRef.current = true;
+        container.scrollLeft = oneSetWidth;
+        resetTimeout = setTimeout(() => {
+          isResettingRef.current = false;
+        }, 100);
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      if (resetTimeout) clearTimeout(resetTimeout);
+    };
+  }, []);
+
+  // Setup auto slide interval
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || isHovered) {
+      if (autoSlideIntervalRef.current) {
+        clearInterval(autoSlideIntervalRef.current);
+      }
+      return;
+    }
+
+    // Calculate scroll distance once at start
+    const initialScrollDistance = getScrollDistance();
+
+    autoSlideIntervalRef.current = setInterval(() => {
+      if (container && !isHovered && !isResettingRef.current) {
+        const scrollDistance = getScrollDistance() || initialScrollDistance;
+        container.scrollBy({
+          left: scrollDistance,
+          behavior: 'smooth',
+        });
+      }
+    }, 3000);
+
+    return () => {
+      if (autoSlideIntervalRef.current) {
+        clearInterval(autoSlideIntervalRef.current);
+      }
+    };
+  }, [isHovered]);
 
   const handleCategoryClick = (categoryName) => {
     router.push(`/collection?category=${encodeURIComponent(categoryName)}`);
@@ -58,94 +138,75 @@ export function CategoryGrid() {
           <h3 className="text-3xl md:text-4xl font-semibold mb-2" style={{ color: '#5B4636' }}>
             Shop by Category
           </h3>
-          <p className="text-base" style={{ color: '#6B6B6B' }}>
-            Explore our wide range of products
-          </p>
+          <p className="text-base" style={{ color: '#6B6B6B' }}>Explore our wide range of products</p>
         </div>
 
+        {/* Slider Wrapper */}
         <div
           className="relative group"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
-          {/* Left fade */}
-          <div className="absolute left-0 top-0 h-full w-8 sm:w-14 bg-gradient-to-r from-[#F8F6F2] to-transparent z-10 pointer-events-none" />
-
-          {/* Left arrow */}
+          {/* Left Arrow */}
           <button
-            onClick={() => handleArrow('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full
-                       opacity-0 group-hover:opacity-90 hover:!opacity-100
-                       transition-opacity duration-300 -translate-x-3 sm:-translate-x-4"
-            style={{ backgroundColor: '#FFFFFF', color: '#2F6B3F', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}
+            onClick={() => scroll('left')}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 -translate-x-4 sm:-translate-x-3"
+            style={{ backgroundColor: '#FFFFFF', color: '#2F6B3F', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
             aria-label="Scroll left"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
 
-          {/*
-           * Scroll container — overflow-x-auto lets scrollBy() work for arrows.
-           * The inner track animates via CSS marquee.
-           * On hover: animationPlayState pauses the transform mid-frame (no snap).
-           */}
+          {/* Left Gradient Fade */}
+          <div className="absolute left-0 top-0 h-full w-8 sm:w-12 bg-gradient-to-r from-[#F8F6F2] via-[#F8F6F2]/60 to-transparent z-10 rounded-l-lg pointer-events-none" />
+
+          {/* Horizontal Scroll Container */}
           <div
             ref={scrollContainerRef}
-            className="overflow-x-auto"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            className="flex gap-2 sm:gap-3 lg:gap-4 overflow-x-auto scroll-smooth px-2"
+            style={{
+              scrollBehavior: 'smooth',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
           >
-            <div
-              ref={trackRef}
-              className="flex"
-              style={{
-                gap: `${gap}px`,
-                width: 'max-content',
-                animationName: 'marquee',
-                animationDuration: isMobile ? '20s' : '30s',
-                animationTimingFunction: 'linear',
-                animationIterationCount: 'infinite',
-                // KEY FIX: pause in-place instead of removing animation (which would snap to transform:none)
-                animationPlayState: isPaused ? 'paused' : 'running',
-              }}
-            >
-              {duplicatedCategories.map((category, idx) => (
-                <button
-                  key={`cat-${idx}`}
-                  onClick={() => handleCategoryClick(category.name)}
-                  className="rounded-lg overflow-hidden flex flex-col bg-white shrink-0
-                             transition-shadow duration-300 hover:shadow-md hover:-translate-y-0.5"
-                  style={{ border: '1px solid #E6E1D8', width: `${cardWidth}px` }}
-                  aria-label={`Browse ${category.name}`}
-                >
-                  <div className="relative w-full overflow-hidden bg-gray-100" style={{ aspectRatio: '1 / 1' }}>
-                    <img
-                      src={category.image}
-                      alt={category.name}
-                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                      onError={(e) => {
-                        e.target.src = 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&q=80';
-                      }}
-                    />
-                  </div>
-                  <div className="p-2 sm:p-3 flex items-center justify-center text-center">
-                    <h4 className="text-[10px] sm:text-xs lg:text-sm font-medium leading-tight" style={{ color: '#3A3A3A' }}>
-                      {category.name}
-                    </h4>
-                  </div>
-                </button>
-              ))}
-            </div>
+            {/* All categories - 3x duplicated for infinite loop */}
+            {duplicatedCategories.map((category, idx) => (
+              <button
+                key={`cat-${idx}`}
+                data-category-card
+                onClick={() => handleCategoryClick(category.name)}
+                className="group/card rounded-lg overflow-hidden transition-all duration-300 flex flex-col bg-white hover:bg-gray-50 cursor-pointer flex-shrink-0"
+                style={{ 
+                  border: '1px solid #E6E1D8',
+                  width: typeof window !== 'undefined' && window.innerWidth < 768 ? 'clamp(110px, 22vw, 140px)' : 'clamp(140px, 18vw, 220px)',
+                }}
+              >
+                <div className="relative w-full aspect-square overflow-hidden bg-gray-100">
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300"
+                    onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&q=80'}
+                  />
+                </div>
+                <div className="p-1.5 sm:p-3 lg:p-4 flex-1 flex items-center justify-center text-center">
+                  <h4 className="text-[9px] sm:text-xs lg:text-sm font-medium leading-tight" style={{ color: '#3A3A3A' }}>
+                    {category.name}
+                  </h4>
+                </div>
+              </button>
+            ))}
           </div>
 
-          {/* Right fade */}
-          <div className="absolute right-0 top-0 h-full w-8 sm:w-14 bg-gradient-to-l from-[#F8F6F2] to-transparent z-10 pointer-events-none" />
+          {/* Right Gradient Fade */}
+          <div className="absolute right-0 top-0 h-full w-8 sm:w-12 bg-gradient-to-l from-[#F8F6F2] via-[#F8F6F2]/60 to-transparent z-10 rounded-r-lg pointer-events-none" />
 
-          {/* Right arrow */}
+          {/* Right Arrow */}
           <button
-            onClick={() => handleArrow('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full
-                       opacity-0 group-hover:opacity-90 hover:!opacity-100
-                       transition-opacity duration-300 translate-x-3 sm:translate-x-4"
-            style={{ backgroundColor: '#FFFFFF', color: '#2F6B3F', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}
+            onClick={() => scroll('right')}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 translate-x-4 sm:translate-x-3"
+            style={{ backgroundColor: '#FFFFFF', color: '#2F6B3F', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
             aria-label="Scroll right"
           >
             <ChevronRight className="w-5 h-5" />
@@ -153,12 +214,10 @@ export function CategoryGrid() {
         </div>
       </div>
 
+      {/* Hide scrollbar for all browsers */}
       <style>{`
-        div::-webkit-scrollbar { display: none; }
-
-        @keyframes marquee {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+        div[class*="overflow-x-auto"]::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
     </section>

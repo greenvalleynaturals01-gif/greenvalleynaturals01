@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { ShoppingCart, Heart } from 'lucide-react';
 import { ShopContext } from '../context/ShopContext';
 import { NotificationContext } from '../context/NotificationContext';
-import { sampleProducts } from '../assets/sampleProducts';
 
 export function BestsellingProducts() {
   const router = useRouter();
@@ -14,10 +13,10 @@ export function BestsellingProducts() {
   const [bestSeller, setBestSeller] = useState([]);
 
   useEffect(() => {
-    const allProducts = (products && products.length > 0) ? products : sampleProducts;
+    const allProducts = products || [];
     // Bestselling logic placeholder - not implemented yet
     // const bestProducts = allProducts.filter((item) => (item.bestseller));
-    // const displayProducts = bestProducts.length > 0 ? bestProducts : sampleProducts.slice(0, 4);
+    // const displayProducts = bestProducts.length > 0 ? bestProducts : [].slice(0, 4);
     
     // For now, just show first 4 products
     setBestSeller(allProducts.slice(0, 4));
